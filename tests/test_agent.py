@@ -68,3 +68,16 @@ def test_retry_sends_error_output_to_llm(mocker):
 
     second_call_args = mock_llm.call_args_list[1]
     assert "AssertionError: 1 != 2" in str(second_call_args)
+
+def test_first_call_has_no_error_output(mocker):
+    mocker.patch("src.agents.run_tests", return_value=RunResult(
+        passed=True, output="1 passed", exit_code=0
+    ))
+
+    mock_llm = mocker.patch("src.agents.generate_test_code", return_value="def test_foo(): assert True")
+
+    agent = Agent(AgentConfig(max_retries=3))
+    agent.run("fake_source_code.py")
+
+    first_call_args = mock_llm.call_args_list[0]
+    assert None in first_call_args.args or first_call_args.args[1] is None
