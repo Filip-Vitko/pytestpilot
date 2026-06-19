@@ -1,7 +1,3 @@
-#TODO: builds actual text that gets sent to Ollama 
-#TODO: usage in llm_client.py
-#TODO: first call source code, second for retry that includes error output
-
 SYSTEM_PROMPT = """You are a code expert. You will be given Python source code. 
 Write comprehensive pytest tests for it. Focus on edge cases, boundary conditions, 
 and invalid inputs. Assume the code might have bugs — your tests should catch them. 
