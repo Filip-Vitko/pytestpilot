@@ -1,4 +1,6 @@
+import os
 from dataclasses import dataclass
+from src.config import WORKDIR
 from src.runner import RunResult, run_tests
 from src.llm_client import generate_test_code, fix_source_code
 
@@ -19,17 +21,19 @@ class AgentResult:
 class Agent:
     def __init__(self, config: AgentConfig):
         self.config = config
+        os.makedirs(WORKDIR, exist_ok=True)
 
     def run(self, source_file: str) -> AgentResult:
         with open(source_file) as f:
             source_code = f.read()
 
         test_code = generate_test_code(source_code)
-        test_file = "tests/generated_test.py"
+        test_file = os.path.join(WORKDIR, "generated_test.py")
 
         for _ in range(self.config.max_retries):
+            combined = source_code + "\n\n" + test_code
             with open(test_file, "w") as f:
-                f.write(test_code)
+                f.write(combined)
 
             run_result = run_tests(test_file)
 
