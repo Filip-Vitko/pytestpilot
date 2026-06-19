@@ -1,6 +1,16 @@
+import re
 import requests
 from src.config import OLLAMA_URL, MODEL_NAME
 from src.prompts import SYSTEM_PROMPT, build_user_prompt, build_fix_prompt
+
+def _strip_markdown_fences(text: str) -> str:
+    """Remove ```python ... ``` or ``` ... ``` wrapping if present."""
+    text = text.strip()
+    pattern = r"```(?:python)?\s*(.*?)\s*```"
+    match = re.search(pattern, text, re.DOTALL)
+    if match:
+        return match.group(1).strip()
+    return text
 
 def _call_ollama(system_prompt: str, user_prompt: str) -> str:
     try:
@@ -12,9 +22,11 @@ def _call_ollama(system_prompt: str, user_prompt: str) -> str:
                     {"role": "system", "content": system_prompt}, 
                     {"role": "user", "content": user_prompt}
                     ],
+                    "stream": False,
             },
         )
-        return response.json().get("message", {}).get("content", "")
+        content = response.json().get("message", {}).get("content", "")
+        return _strip_markdown_fences(content)
     except requests.exceptions.ConnectionError:
         return ""
 

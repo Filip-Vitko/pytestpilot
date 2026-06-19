@@ -1,5 +1,5 @@
 import requests
-from src.llm_client import generate_test_code, fix_source_code
+from src.llm_client import generate_test_code, fix_source_code, _strip_markdown_fences
 
 
 # --- generate_test_code: happy path ---
@@ -152,3 +152,13 @@ def test_handles_malformed_response(mocker):
 
     result = generate_test_code("def add(a, b): return a + b")
     assert result == ""
+
+# --- shared: strip markdown fences ---
+
+def test_strips_markdown_fences():
+    raw = "```python\ndef test_foo():\n    assert True\n```"
+    assert _strip_markdown_fences(raw) == "def test_foo():\n    assert True"
+
+def test_leaves_clean_code_unchanged():
+    raw = "def test_foo():\n    assert True"
+    assert _strip_markdown_fences(raw) == raw
